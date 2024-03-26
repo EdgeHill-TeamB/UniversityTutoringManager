@@ -4,12 +4,13 @@ from fastapi import Depends
 from starlette.requests import Request as StarletteRequest
 
 
-from api.core.Application.Authorisation.auth_service import TokenAuthorisationService
-from api.core.Application.Authorisation.auth_response import AuthResponse
-from api.Infrastructure.ExternalServices.Authorisation.jwt_authenticator import (
-    JWTAuthenticator,
+from utm.core.Application.Authorisation.auth_service import TokenAuthorisationService
+from utm.core.Application.Authorisation.auth_response import AuthResponse
+from utm.core.Application.Common._exceptions import ErrorTypes
+from utm.Infrastructure.ExternalServices.Authorisation.jwt_authenticator import (
+    JWTTokenValidator,
 )
-from api.Presentation.common._exceptions import (
+from ..common._exceptions import (
     BadCredentialsException,
     RequiresAuthenticationException,
     PermissionDeniedException,
@@ -48,19 +49,19 @@ def get_bearer_token(request: StarletteRequest) -> str:
         raise RequiresAuthenticationException
 
 
-def validate_token(token: Annotated[str, Depends()]) -> AuthResponse:
+def validate_token(token: Annotated[str, Depends(get_bearer_token)]) -> AuthResponse:
     """sumary_line
 
     Keyword arguments:
     argument -- description
     Return: return_description
     """
-    token_validator = JWTAuthenticator(
+    token_validator = JWTTokenValidator(
         jwt_access_token="", auth0_issuer_url="", auth0_audience="", jwks_uri=""
     )
-    return TokenAuthorisationService(token).get_credentials(
-        token_validator=token_validator
-    )
+    result = TokenAuthorisationService(
+        token, token_validator=token_validator
+    ).get_credentials()
 
 
 class PermissionsValidator:
@@ -72,6 +73,7 @@ class PermissionsValidator:
     ):
         token_permissions_set = set(auth_credentials.permissions)
         required_permissions_set = set(self.required_permissions)
+        # return user identifier or necessary credentials?
 
         if not required_permissions_set.issubset(token_permissions_set):
             raise PermissionDeniedException

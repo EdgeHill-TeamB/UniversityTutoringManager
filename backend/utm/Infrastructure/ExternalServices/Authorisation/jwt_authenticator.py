@@ -1,11 +1,11 @@
-import jwt
+from jwt import PyJWKClient, decode
 from jwt.exceptions import PyJWKClientError, InvalidTokenError
 
 
-from api.core.Application.Authorisation.auth_service import IAuthTokenValidator
+from utm.core.Application.Authorisation.auth_service import IAuthTokenValidator
 
 
-class JWTAuthenticator(IAuthTokenValidator):
+class JWTTokenValidator(IAuthTokenValidator):
     """Perform JSON Web Token (JWT) validation using PyJWT"""
 
     def __init__(
@@ -23,13 +23,21 @@ class JWTAuthenticator(IAuthTokenValidator):
         self.algorithm = algorithm
         self.jwks_uri = jwks_uri
 
+    def set_validation_exception(self, auth_exception: Exception) -> None:
+        self.validation_exception = auth_exception
+        return self
+
+    def set_application_exception(self, application_exception: Exception) -> None:
+        self.application_exception = application_exception
+        return self
+
     def validate(self):
         try:
-            jwks_client = jwt.PyJWKClient(self.jwks_uri)
+            jwks_client = PyJWKClient(self.jwks_uri)
             jwt_signing_key = jwks_client.get_signing_key_from_jwt(
                 self.jwt_access_token
             ).key
-            payload = jwt.decode(
+            payload = decode(
                 self.jwt_access_token,
                 jwt_signing_key,
                 algorithms=self.algorithm,
@@ -37,6 +45,9 @@ class JWTAuthenticator(IAuthTokenValidator):
                 issuer=self.auth0_issuer_url,
             )
         # TODO: handle exception in top level
-        except (PyJWKClientError, InvalidTokenError) as exc:
-            return exc
+        except InvalidTokenError as exc:
+            raise self.validation_exception("Invalid Auth Token Provided") from exc
+        except PyJWKClientError:
+            raise self.application_exception("Validation Attempt Failed") from exc
+
         return payload
