@@ -48,6 +48,8 @@ def inject_routers(app: FastAPI) -> FastAPI:
 
     app.include_router(test_router, prefix="/test")
 
-    # http://localhost:8080/personal-tutor/user-details
+    from utm.Presentation.routes.Department import router as dept_router
+
+    app.include_router(router=dept_router, prefix="/department")
 
     return app
