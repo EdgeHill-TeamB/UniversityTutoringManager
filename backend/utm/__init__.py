@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 
-def create_app(config) -> FastAPI:
+def create_app() -> FastAPI:
 
     app = FastAPI()
 
@@ -22,15 +22,15 @@ def create_app(config) -> FastAPI:
 
 def inject_middlewares(app: FastAPI, config: dict[str, str]) -> FastAPI:
 
-    from api.Presentation.middlewares.secure_header import SecureHeaders
+    from utm.Presentation.middlewares.secure_headers import SecureHeaders
 
     app.add_middleware(SecureHeaders)
 
     from fastapi.middleware.cors import CORSMiddleware
 
+    # allow_origins=[config["client_origin_url"]],
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[config["client_origin_url"]],
         allow_methods=["GET"],
         allow_headers=["Authorization", "Content-Type"],
         max_age=86400,
@@ -46,5 +46,8 @@ def inject_routers(app: FastAPI) -> FastAPI:
     async def posts():
         return {"heartbeat": "active"}
 
-    app.include_router(test_router, prefix="test")
+    app.include_router(test_router, prefix="/test")
+
+    # http://localhost:8080/personal-tutor/user-details
+
     return app
