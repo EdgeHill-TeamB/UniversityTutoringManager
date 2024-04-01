@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from ..models.cohort import Cohort
 
 
 class Staff(BaseModel):
@@ -9,8 +10,10 @@ class Staff(BaseModel):
     dept_id: int
     role: list[str]
     training_status: bool
+    cohort_id: Cohort.id
 
 
 class StaffFilter(BaseModel):
     id: int
     dept_id: int
+    cohort_id: Cohort.id
