@@ -59,4 +59,8 @@ def inject_routers(app: FastAPI) -> FastAPI:
     app.include_router(router=student_cohort_router, prefix="/student-cohort")
     app.include_router(router=meeting_router, prefix="/meeting")
 
+    from utm.Presentation.routes.Tutor import router as tutor_router
+
+    app.include_router(router=tutor_router, prefix="/tutor")
+
     return app
