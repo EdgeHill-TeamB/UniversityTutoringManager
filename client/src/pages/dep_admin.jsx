@@ -1,18 +1,15 @@
-import { useState } from 'react'
-import reactLogo from '/src/assets/react.svg'
-import viteLogo from '/vite.svg'
-import '/src/styles/App.css'
-import Header from '/src/components/header.jsx'
-import Body from '/src/components/body.jsx'
-import Footer from '/src/components/footer.jsx'
+import { useState } from "react";
+import "/src/styles/App.css";
+import Header from "../components/layout/header.jsx";
+import Body from "../components/layout/body.jsx";
+import Footer from "../components/layout/footer.jsx";
 
-function DepAdmin () {
-    return   (
+function DepAdminPage() {
+  return (
     <span>
-        <Header />
-        <Body />
-        <Footer />
-    </span>)
+      <Body />
+    </span>
+  );
 }
 
-export default DepAdmin
+export default DepAdminPage;

@@ -1,4 +1,5 @@
 class ErrorTypes:
+    PERMISSION_ERROR = "PermissionError"
     PARAMETERS_ERROR = "ParametersError"
     RESOURCE_ERROR = "ResourceError"
     SYSTEM_ERROR = "SystemError"

@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 
 
 class ResponseTypes:
+    PERMISSION_ERROR = "PermissionError"
     PARAMETERS_ERROR = "ParametersError"
     RESOURCE_ERROR = "ResourceError"
     SYSTEM_ERROR = "SystemError"

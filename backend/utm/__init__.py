@@ -40,16 +40,23 @@ def inject_middlewares(app: FastAPI, config: dict[str, str]) -> FastAPI:
 
 
 def inject_routers(app: FastAPI) -> FastAPI:
-    test_router = APIRouter()
+    heartbeat_router = APIRouter()
 
-    @test_router.get("/heartbeat")
+    @heartbeat_router.get("/heartbeat")
     async def posts():
         return {"heartbeat": "active"}
 
-    app.include_router(test_router, prefix="/test")
+    from utm.Presentation.routes.Admin import router as admin_router
+    from utm.Presentation.routes.PersonalTutor import router as personal_tutor_router
+    from utm.Presentation.routes.Student import router as student_router
+    from utm.Presentation.routes.StudentCohort import router as student_cohort_router
+    from utm.Presentation.routes.Meeting import router as meeting_router
 
-    from utm.Presentation.routes.Department import router as dept_router
-
-    app.include_router(router=dept_router, prefix="/department")
+    app.include_router(heartbeat_router, prefix="/test")
+    app.include_router(router=admin_router, prefix="/admin")
+    app.include_router(router=personal_tutor_router, prefix="/personal-tutor")
+    app.include_router(router=student_router, prefix="/student")
+    app.include_router(router=student_cohort_router, prefix="/student-cohort")
+    app.include_router(router=meeting_router, prefix="/meeting")
 
     return app

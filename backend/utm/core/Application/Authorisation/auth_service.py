@@ -1,4 +1,4 @@
-from .auth_response import AuthResponse
+from ..Common.authorised_user import AuthorisedUser
 from ..Common.responses import Result, SuccessResult, FailureResult
 from ..Common._exceptions import UTMApplicationError
 
@@ -15,7 +15,7 @@ class IAuthorisationService(Protocol):
 
     def create_validation_token(
         self,
-    ) -> AuthResponse: ...
+    ) -> AuthorisedUser: ...
 
 
 class TokenAuthorisationService(IAuthorisationService):
@@ -39,13 +39,13 @@ class TokenAuthorisationService(IAuthorisationService):
         result = None
         try:
             creds = self.token_validator.validate(self.token)
-            auth_response = AuthResponse(
-                first_name=creds.a,
-                last_name=creds.b,
-                email=creds.c,
-                credentials=creds.d,
-            )
-            result = SuccessResult(_value=auth_response)
+            response = {
+                "user_id": creds["sub"],
+                "user_group": creds["user_group"],
+                "department_id": creds["department_id"],
+            }
+
+            result = SuccessResult(_value=response)
         except UTMApplicationError as exc:
             result = FailureResult(type_=exc.error_type, message=exc)
 
