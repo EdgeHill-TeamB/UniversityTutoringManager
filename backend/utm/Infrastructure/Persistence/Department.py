@@ -1,4 +1,4 @@
-from utm.core.Application.Department.dept_manager import IDepartmentRepository
+from utm.core.Application.Department.Interfaces import IDepartmentRepository
 
 
 class MEMDepartmentRepo(IDepartmentRepository):
@@ -14,7 +14,7 @@ class MEMDepartmentRepo(IDepartmentRepository):
         self.resource_exception = resource_exception
         return self
 
-    def get_staff_by_department_id(self, deparment_id):
-        if deparment_id not in self.db:
-            raise self.resource_exception("Deparment does not Exist")
-        return self.db[deparment_id]["Staff"]
+    def get_staff_by_department_id(self, department_id):
+        if department_id not in self.db:
+            raise self.resource_exception("Department does not Exist")
+        return self.db[department_id]["Staff"]

@@ -1,17 +1,17 @@
 from pydantic import BaseModel
-from . import staff
-from ..models.cohort import Cohort
+
+
+class StudentProfile(BaseModel):
+    id: int
+    name: str
+    age: int
+    email: str
+    department: str
+
 
 class Student(BaseModel):
     id: int
     name: str
+    age: int
     email: str
-    dept_id: int
-    cohort_id: Cohort.id
-
-
-
-class studentFilter(BaseModel):
-    id: int
-    dept_id: int
-    cohort_id: Cohort.id
+    department: str

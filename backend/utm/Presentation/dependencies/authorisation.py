@@ -1,11 +1,8 @@
 from typing import Annotated, NamedTuple
-
 from fastapi import Depends
 from starlette.requests import Request as StarletteRequest
-
-
 from utm.core.Application.Authorisation.auth_service import TokenAuthorisationService
-from utm.core.Application.Authorisation.auth_response import AuthResponse
+from utm.core.Application.Common.authorised_user import AuthorisedUser
 from utm.core.Application.Common._exceptions import ErrorTypes
 from utm.Infrastructure.ExternalServices.Authorisation.jwt_authenticator import (
     JWTTokenValidator,
@@ -49,7 +46,7 @@ def get_bearer_token(request: StarletteRequest) -> str:
         raise RequiresAuthenticationException
 
 
-def validate_token(token: Annotated[str, Depends(get_bearer_token)]) -> AuthResponse:
+def validate_token(token: Annotated[str, Depends(get_bearer_token)]) -> dict[str, str]:
     """sumary_line
 
     Keyword arguments:
@@ -63,17 +60,20 @@ def validate_token(token: Annotated[str, Depends(get_bearer_token)]) -> AuthResp
         token, token_validator=token_validator
     ).get_credentials()
 
+    if result:
+        return result.value
+    else:
+        raise PermissionDeniedException(
+            error_type=ErrorTypes.PERMISSION_ERROR,
+            message="You do not have permission to view this resource",
+        )
 
-class PermissionsValidator:
-    def __init__(self, required_permissions: list[str]):
-        self.required_permissions = required_permissions
 
-    def __call__(
-        self, auth_credentials: Annotated[AuthResponse, Depends(validate_token)]
-    ):
-        token_permissions_set = set(auth_credentials.permissions)
-        required_permissions_set = set(self.required_permissions)
-        # return user identifier or necessary credentials?
-
-        if not required_permissions_set.issubset(token_permissions_set):
-            raise PermissionDeniedException
+def get_request_user(
+    creds: Annotated[AuthorisedUser, Depends(validate_token)]
+) -> AuthorisedUser:
+    return AuthorisedUser(
+        user_id=creds["user_id"],
+        user_group=creds["user_group"],
+        department_id=creds["department_id"],
+    )
