@@ -1,4 +1,5 @@
 class ErrorTypes:
+    AUTHORISATION_ERROR = "AuthorisationError"
     PERMISSION_ERROR = "PermissionError"
     PARAMETERS_ERROR = "ParametersError"
     RESOURCE_ERROR = "ResourceError"
@@ -11,13 +12,13 @@ class UTMApplicationError(Exception):
         self.error_type = ErrorTypes.SYSTEM_ERROR
 
 
-class UTMInternalApplicationFailure(Exception):
+class UTMInternalApplicationFailure(UTMApplicationError):
     def __init__(self, message):
         super().__init__(message)
         self.error_type = ErrorTypes.SYSTEM_ERROR
 
 
-class UTMValidationError(Exception):
+class UTMValidationError(UTMApplicationError):
     def __init__(self, message):
         super().__init__(message)
-        self.error_type = ErrorTypes.PARAMETERS_ERROR
+        self.error_type = ErrorTypes.AUTHORISATION_ERROR

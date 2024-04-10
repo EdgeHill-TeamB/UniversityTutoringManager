@@ -22,9 +22,17 @@ class Result(ABC):
 class SuccessResult(Result):
 
     def __init__(self, _value):
-        super().__init__()
-        self.type = ResponseTypes.SUCCESS
-        self.value = _value
+        # super().__init__()
+        self.type_ = ResponseTypes.SUCCESS
+        self._value = _value
+
+    @property
+    def type(self):
+        return self.type_
+
+    @property
+    def value(self):
+        return self._value
 
     def __bool__(self) -> bool:
         return True
@@ -33,18 +41,22 @@ class SuccessResult(Result):
 class FailureResult(Result):
 
     def __init__(self, type_, message):
-        super().__init__()
-        self.type = type_
+        # super().__init__()
+        self.type_ = type_
         self.message = self._format_message(message)
 
     def _format_message(self, msg):
         if isinstance(msg, Exception):
-            return f"{msg.__class__.__name__} : {str(msg)}"
+            return msg.args[0]
         return msg
 
     @property
+    def type(self):
+        return self.type_
+
+    @property
     def value(self):
-        return {"type": self.type, "message": self.message}
+        return self.message
 
     def __bool__(self) -> bool:
-        return True
+        return False

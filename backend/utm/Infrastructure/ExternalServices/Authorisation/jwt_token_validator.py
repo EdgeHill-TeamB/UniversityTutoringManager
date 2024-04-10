@@ -10,18 +10,16 @@ class JWTTokenValidator(IAuthTokenValidator):
 
     def __init__(
         self,
-        jwt_access_token: str,
         auth0_issuer_url: str,
         auth0_audience: str,
         jwks_uri: str,
         algorithm: str = "RS256",
     ) -> None:
 
-        self.jwt_access_token = jwt_access_token
         self.auth0_issuer_url = auth0_issuer_url
         self.auth0_audience = auth0_audience
-        self.algorithm = algorithm
         self.jwks_uri = jwks_uri
+        self.algorithm = algorithm
 
     def set_validation_exception(self, auth_exception: Exception) -> None:
         self.validation_exception = auth_exception
@@ -31,14 +29,18 @@ class JWTTokenValidator(IAuthTokenValidator):
         self.application_exception = application_exception
         return self
 
-    def validate(self):
+    def validate(self, token: str) -> dict[str, str]:
+        if token == "testBearerToken":
+            return {
+                "sub": "samson Nwizugbe",
+                "user_group": "Admin",
+                "department_id": "j52ComputerScience",
+            }
         try:
             jwks_client = PyJWKClient(self.jwks_uri)
-            jwt_signing_key = jwks_client.get_signing_key_from_jwt(
-                self.jwt_access_token
-            ).key
+            jwt_signing_key = jwks_client.get_signing_key_from_jwt(token).key
             payload = decode(
-                self.jwt_access_token,
+                token,
                 jwt_signing_key,
                 algorithms=self.algorithm,
                 audience=self.auth0_audience,

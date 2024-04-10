@@ -1,6 +1,8 @@
+from __future__ import annotations
 from pydantic import BaseModel
 from typing import List
-from .personal_tutor import PersonalTutor
+
+# from .personal_tutor import PersonalTutor
 
 
 class Cohort(BaseModel):
@@ -10,4 +12,4 @@ class Cohort(BaseModel):
     start_date: int
     end_date: int
     students: int
-    personal_tutor_assignment: List[PersonalTutor]
+    # personal_tutor_assignment: List[PersonalTutor]

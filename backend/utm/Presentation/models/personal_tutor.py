@@ -1,3 +1,4 @@
+from __future__ import annotations
 from datetime import datetime
 from pydantic import BaseModel
 from typing import List
@@ -22,7 +23,6 @@ class PersonalTutor(BaseModel):
     phone: str
     department: str
     training_status: PersonalTutorTrainingStatus
-    cohorts: List[Cohort]
 
 
 class PersonalTutorSchedule(BaseModel):

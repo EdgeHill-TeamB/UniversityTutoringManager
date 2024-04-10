@@ -21,10 +21,13 @@ class ResponseMaker:
 
     @classmethod
     def from_multitype(
-        cls, data: Dict[str, List], model_classes: Dict[BaseModel], status_code: int
+        cls,
+        data: Dict[str, List],
+        model_classes: Dict[str, BaseModel],
+        status_code: int,
     ):
         serialized_data = {
-            key: [model_classes[key](**item).model_dump() for item in value]
+            key: [model_classes[key.lower()](**item).model_dump() for item in value]
             for key, value in data.items()
         }
         return JSONResponse(content=serialized_data, status_code=status_code)
