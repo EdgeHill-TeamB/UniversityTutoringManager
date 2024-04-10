@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "api"
+name = "utm"
 version = "0.1.0"
 description = ""
 authors = ["nwizugbesamson <samson6398@gmail.com>"]
@@ -12,11 +12,13 @@ secure = "^0.3.0"
 pyjwt = "^2.8.0"
 python-dotenv = "^1.0.1"
 uvicorn = "^0.28.0"
+faker = "^24.8.0"
 
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.8.0"
 pytest = "^8.0.2"
+faker = "^24.8.0"
 
 [build-system]
 requires = ["poetry-core"]

@@ -1,8 +1,11 @@
 class Tutor:
-    def __init__(self, name, module, department):
+    def __init__(self, id, name, module, email, training_status, department):
+        self.id = id
         self.name = name
         self.module = module
-        self.personal_tutor_training_status = False
+        self.email = email
+        self.personal_tutor_training_status = training_status
+        self.department = department
 
     def get_name(self):
         return self.name
@@ -21,7 +24,10 @@ class Tutor:
 
     def serialise(self) -> dict[str, str]:
         return {
+            "id": self.id,
             "name": self.name,
             "module": self.module,
-            "personal_tutor_training_status": self.personal_tutor_training_status,
+            "email": self.email,
+            "training_status": self.personal_tutor_training_status,
+            "department": self.department,
         }

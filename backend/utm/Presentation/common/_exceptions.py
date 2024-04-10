@@ -1,4 +1,13 @@
 from fastapi import HTTPException, status
+from utm.core.Application.Common._exceptions import ErrorTypes
+
+
+class InternalServerErrorException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error",
+        )
 
 
 class BadCredentialsException(HTTPException):
@@ -16,10 +25,8 @@ class PermissionDeniedException(HTTPException):
 
 
 class RequiresAuthenticationException(HTTPException):
-    def __init__(self):
-        super().__init__(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Requires authentication"
-        )
+    def __init__(self, detail: str = "Requires authentication"):
+        super().__init__(status_code=status.HTTP_401_UNAUTHORIZED, detail=detail)
 
 
 class UnableToVerifyException(HTTPException):
@@ -36,3 +43,9 @@ class ResourceNotFoundException(HTTPException):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=detail,
         )
+
+
+ERRORS = {
+    ErrorTypes.RESOURCE_ERROR: ResourceNotFoundException,
+    ErrorTypes.AUTHORISATION_ERROR: RequiresAuthenticationException,
+}

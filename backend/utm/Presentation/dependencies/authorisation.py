@@ -3,14 +3,19 @@ from fastapi import Depends
 from starlette.requests import Request as StarletteRequest
 from utm.core.Application.Authorisation.auth_service import TokenAuthorisationService
 from utm.core.Application.Common.authorised_user import AuthorisedUser
-from utm.core.Application.Common._exceptions import ErrorTypes
-from utm.Infrastructure.ExternalServices.Authorisation.jwt_authenticator import (
-    JWTTokenValidator,
+from utm.core.Application.Common._exceptions import (
+    ErrorTypes,
+    UTMApplicationError,
+    UTMValidationError,
+)
+from utm.Infrastructure.ExternalServices.Authorisation.mem_token_validator import (
+    MemTokenValidator,
 )
 from ..common._exceptions import (
     BadCredentialsException,
     RequiresAuthenticationException,
-    PermissionDeniedException,
+    InternalServerErrorException,
+    ERRORS,
 )
 
 
@@ -53,25 +58,27 @@ def validate_token(token: Annotated[str, Depends(get_bearer_token)]) -> dict[str
     argument -- description
     Return: return_description
     """
-    token_validator = JWTTokenValidator(
-        jwt_access_token="", auth0_issuer_url="", auth0_audience="", jwks_uri=""
+    token_validator = (
+        MemTokenValidator()
+        .set_validation_exception(UTMValidationError)
+        .set_application_exception(UTMApplicationError)
     )
+
     result = TokenAuthorisationService(
         token, token_validator=token_validator
     ).get_credentials()
 
+    print("Auth", result.type, " ", result.value, " ", bool(result))
     if result:
         return result.value
     else:
-        raise PermissionDeniedException(
-            error_type=ErrorTypes.PERMISSION_ERROR,
-            message="You do not have permission to view this resource",
-        )
+        raise ERRORS[result.type](detail=result.value)
 
 
 def get_request_user(
     creds: Annotated[AuthorisedUser, Depends(validate_token)]
 ) -> AuthorisedUser:
+
     return AuthorisedUser(
         user_id=creds["user_id"],
         user_group=creds["user_group"],

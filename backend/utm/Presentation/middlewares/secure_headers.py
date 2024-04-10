@@ -4,7 +4,12 @@ import secure
 from starlette.middleware.base import BaseHTTPMiddleware
 
 secure_headers = secure.Secure(
-    csp=secure.ContentSecurityPolicy().default_src("'self'").frame_ancestors("'none'"),
+    csp=secure.ContentSecurityPolicy()
+    .default_src("*")
+    .frame_ancestors("*")
+    .style_src("*")
+    .script_src("* 'unsafe-inline'"),
+    # csp=secure.ContentSecurityPolicy().default_src("'self'").frame_ancestors("'none'"),
     hsts=secure.StrictTransportSecurity().max_age(31536000).include_subdomains(),
     referrer=secure.ReferrerPolicy().no_referrer(),
     cache=secure.CacheControl().no_cache().no_store().max_age(0).must_revalidate(),

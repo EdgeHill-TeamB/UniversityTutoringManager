@@ -15,30 +15,34 @@ class DepartmentModel(BaseModel):
 
 
 class DepartmentAdminModel(BaseModel):
-    id: int
+    id: str
     name: str
     email: str
-    phone: str
+    department: str
 
     def model_dump(self):
         return {
             "id": self.id,
             "name": self.name,
             "email": self.email,
-            "phone": self.phone,
+            "department": self.department,
         }
 
 
 class DepartmentTutorModel(BaseModel):
-    id: int
+    id: str
     name: str
     email: str
-    phone: str
+    module: str
+    training_status: str
+    department: str
 
     def model_dump(self):
         return {
             "id": self.id,
             "name": self.name,
             "email": self.email,
-            "phone": self.phone,
+            "module": self.module,
+            "training_status": self.training_status,
+            "department": self.department,
         }

@@ -8,7 +8,7 @@ from typing import Protocol
 
 class IAuthTokenValidator(Protocol):
 
-    def validate(self) -> dict[str, str]: ...
+    def validate(self, token: str) -> dict[str, str]: ...
 
 
 class IAuthorisationService(Protocol):
@@ -46,7 +46,9 @@ class TokenAuthorisationService(IAuthorisationService):
             }
 
             result = SuccessResult(_value=response)
+
         except UTMApplicationError as exc:
+            print("Failed here ", exc)
             result = FailureResult(type_=exc.error_type, message=exc)
 
         return result
