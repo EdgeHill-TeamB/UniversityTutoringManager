@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import List
 from pydantic import BaseModel
-from .student import Student
 from enum import Enum
 
 
@@ -24,7 +23,7 @@ class CreateStudentMeeting(BaseModel):
     meeting_id: str
     meeting_duration: int
     meeting_host: str
-    meeting_attendee: Student
+    # meeting_attendee: Student
     meeting_agenda: str
 
 
@@ -39,7 +38,7 @@ class CreateCohortMeeting(BaseModel):
     meeting_id: str
     meeting_duration: int
     meeting_host: str
-    meeting_attendees: List[Student]
+    # meeting_attendees: List[Student]
     meeting_agenda: str
 
 
@@ -56,7 +55,7 @@ class Meeting(BaseModel):
     meeting_status: MeetingStatus
     meeting_duration: int
     meeting_host: str
-    meeting_attendees: List[Student]
+    # meeting_attendees: List[Student]
     meeting_agenda: str
 
 
@@ -70,10 +69,10 @@ class MeetingAttendee(BaseModel):
 
 class RequestMeeting(BaseModel):
     meeting_id: int
-    meeting_attendee: Student
+    # meeting_attendee: Student
 
 
 class RequestMeetingResponse(BaseModel):
     meeting_id: int
-    meeting_attendee: Student
+    # meeting_attendee: Student
     status: str

@@ -79,8 +79,10 @@ def get_request_user(
     creds: Annotated[AuthorisedUser, Depends(validate_token)]
 ) -> AuthorisedUser:
 
-    return AuthorisedUser(
+    user = AuthorisedUser(
         user_id=creds["user_id"],
         user_group=creds["user_group"],
         department_id=creds["department_id"],
     )
+    print("Current User: \n", user.serialise())
+    return user

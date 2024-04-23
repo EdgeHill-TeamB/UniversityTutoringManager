@@ -1,16 +1,18 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Request
 from ..common.make_response import ResponseMaker
 from ..common._exceptions import ERRORS
 from ..dependencies.authorisation import get_request_user
 from ..dependencies.department import get_dept_manager
+from ..dependencies.personal_tutor import get_personal_tutor_manager
+from ..dependencies.cohort import get_cohort_manager
 from ..models.department import DepartmentAdminModel, DepartmentTutorModel
-from ..models.student import StudentProfile, Student
-from ..models.personal_tutor import PersonalTutor, PersonalTutorTrainingStatus
-from ..models.student_cohort import Cohort
+from ..models.student import StudentProfile, AddStudentsToCohort
+from ..models.personal_tutor import PersonalTutor, PersonalTutorUpdate
+from ..models.cohort import CohortProfile, CohortCreate
 from typing import Annotated, List
-from utm.core.Application.Department.Interfaces import IDepartmentManager, TutorEnum
+from utm.core.Application.Department.interfaces import IDepartmentManager
 from utm.core.Application.PersonalTutor.interfaces import IPersonalTutorManager
-from utm.core.Application.StudentCohort.interfaces import ICohortManager
+from utm.core.Application.Cohort.interfaces import ICohortManager
 from utm.core.Application.Common.authorised_user import AuthorisedUser
 from utm.core.Application.Common.responses import Result
 
@@ -22,7 +24,6 @@ async def get_staff(
     manager: Annotated[IDepartmentManager, Depends(get_dept_manager)],
     user: Annotated[AuthorisedUser, Depends(get_request_user)],
 ):
-    print("Current User: \n", user.serialise())
 
     result: Result = manager.get_staff(user=user)
 
@@ -39,21 +40,25 @@ async def get_staff(
 
 @router.get("/students")
 async def get_students(
-    dept_id: int,
+    request: Request,
     manager: Annotated[IDepartmentManager, Depends(get_dept_manager)],
     user: Annotated[AuthorisedUser, Depends(get_request_user)],
 ):
-    result: Result = manager.get_students(user=user, department_id=dept_id)
+
+    filters = dict(request.query_params)
+    result: Result = manager.get_students(user=user, filters=filters)
     if not result:
         raise ERRORS[result.type](detail=result.value)
+
     return ResponseMaker.from_list(
         data=result.value, model_class=StudentProfile, status_code=status.HTTP_200_OK
     )
+    # Status => FUNCTIONALITY COMPLETE
 
 
 @router.get("/students/{student_id}")
 async def get_student_by_id(
-    student_id: int,
+    student_id: str,
     manager: Annotated[IDepartmentManager, Depends(get_dept_manager)],
     user: Annotated[AuthorisedUser, Depends(get_request_user)],
 ):
@@ -63,15 +68,15 @@ async def get_student_by_id(
     return ResponseMaker.from_dict(
         data=result.value, model_class=StudentProfile, status_code=status.HTTP_200_OK
     )
+    # Status => FUNCTIONALITY COMPLETE
 
 
-@router.post("/tutors")
+@router.get("/tutors")
 async def get_tutors(
     manager: Annotated[IDepartmentManager, Depends(get_dept_manager)],
     user: Annotated[AuthorisedUser, Depends(get_request_user)],
-    tutor_status: TutorEnum = TutorEnum.all,
 ):
-    result: Result = manager.get_tutors(user=user, status=tutor_status)
+    result: Result = manager.get_tutors(user=user)
     if not result:
         raise ERRORS[result.type](detail=result.value)
     return ResponseMaker.from_list(
@@ -79,6 +84,7 @@ async def get_tutors(
         model_class=DepartmentTutorModel,
         status_code=status.HTTP_200_OK,
     )
+    # Status => FUNCTIONALITY COMPLETE
 
 
 @router.get("/tutors/{tutor_id}")
@@ -95,12 +101,27 @@ async def get_tutor_by_id(
         model_class=DepartmentTutorModel,
         status_code=status.HTTP_200_OK,
     )
+    # Status => FUNCTIONALITY COMPLETE
+
+
+@router.get("/personal-tutors")
+async def get_personal_tutors(
+    manager: Annotated[IPersonalTutorManager, Depends(get_personal_tutor_manager)],
+    user: Annotated[AuthorisedUser, Depends(get_request_user)],
+):
+    result: Result = manager.get_personal_tutors(user=user)
+    if not result:
+        raise ERRORS[result.type](detail=result.value)
+    return ResponseMaker.from_list(
+        data=result.value, model_class=PersonalTutor, status_code=status.HTTP_200_OK
+    )
+    # Status => FUNCTIONALITY COMPLETE
 
 
 @router.post("/personal-tutors/{tutor_id}")
 async def assign_as_personal_tutor(
     tutor_id: int,
-    manager: Annotated[IDepartmentManager, Depends(get_dept_manager)],
+    manager: Annotated[IPersonalTutorManager, Depends(get_personal_tutor_manager)],
     user: Annotated[AuthorisedUser, Depends(get_request_user)],
 ):
     result: Result = manager.assign_tutor_as_personal_tutor(
@@ -111,87 +132,121 @@ async def assign_as_personal_tutor(
     return ResponseMaker.from_dict(
         data=result.value, model_class=PersonalTutor, status_code=status.HTTP_200_OK
     )
+    # Status => FUNCTIONALITY COMPLETE
 
 
-@router.get("/personal-tutors/{tutor_id}/training-status")
-async def get_tutor_training_status(
+@router.get("/personal-tutors/{tutor_id}")
+async def get_personal_tutor(
     tutor_id: int,
-    manager: Annotated[IPersonalTutorManager, Depends(get_dept_manager)],
+    manager: Annotated[IPersonalTutorManager, Depends(get_personal_tutor_manager)],
     user: Annotated[AuthorisedUser, Depends(get_request_user)],
 ):
-    result: Result = manager.get_training_status(user=user, tutor_id=tutor_id)
+    result: Result = manager.get_personal_tutor(user=user, tutor_id=tutor_id)
     if not result:
         raise ERRORS[result.type](detail=result.value)
     return ResponseMaker.from_dict(
-        data=result.value,
-        model_class=PersonalTutorTrainingStatus,
-        status_code=status.HTTP_200_OK,
+        data=result.value, model_class=PersonalTutor, status_code=status.HTTP_200_OK
     )
+    # Status => FUNCTIONALITY COMPLETE
 
 
-@router.put("/personal-tutors/{tutor_id}/training-status")
-async def update_tutor_training_status(
+@router.patch("/personal-tutors/{tutor_id}")
+async def update_tutor(
     tutor_id: int,
-    training_status: PersonalTutorTrainingStatus,
-    manager: Annotated[IPersonalTutorManager, Depends(get_dept_manager)],
+    tutor_update: PersonalTutorUpdate,
+    manager: Annotated[IPersonalTutorManager, Depends(get_personal_tutor_manager)],
     user: Annotated[AuthorisedUser, Depends(get_request_user)],
 ):
-    result: Result = manager.update_training_status(
-        user=user, tutor_id=tutor_id, training_status=training_status.model_dump()
+    result: Result = manager.update_tutor(
+        user=user, tutor_id=tutor_id, tutor_details=tutor_update.model_dump()
     )
     if not result:
         raise ERRORS[result.type](detail=result.value)
+
     return ResponseMaker.from_dict(
         data=result.value,
-        model_class=PersonalTutorTrainingStatus,
+        model_class=PersonalTutor,
         status_code=status.HTTP_200_OK,
     )
+    # Status => FUNCTIONALITY COMPLETE
 
 
 @router.post("/cohorts")
 async def create_cohort(
-    cohort: Cohort,
-    manager: Annotated[ICohortManager, Depends(get_dept_manager)],
+    cohort: CohortCreate,
+    manager: Annotated[ICohortManager, Depends(get_cohort_manager)],
     user: Annotated[AuthorisedUser, Depends(get_request_user)],
 ):
-    result: Result = manager.create_cohort(user=user, cohort=cohort.model_dump())
+    result: Result = manager.create_cohort(user=user, cohort_data=cohort.model_dump())
     if not result:
         raise ERRORS[result.type](detail=result.value)
     return ResponseMaker.from_dict(
-        data=result.value, model_class=Cohort, status_code=status.HTTP_200_OK
+        data=result.value, model_class=CohortProfile, status_code=status.HTTP_200_OK
     )
+    # Status => FUNCTIONALITY COMPLETE
+
+
+@router.get("/cohorts")
+async def get_cohorts(
+    manager: Annotated[ICohortManager, Depends(get_cohort_manager)],
+    user: Annotated[AuthorisedUser, Depends(get_request_user)],
+):
+    result: Result = manager.get_cohorts(user=user)
+    if not result:
+        raise ERRORS[result.type](detail=result.value)
+    return ResponseMaker.from_list(
+        data=result.value, model_class=CohortProfile, status_code=status.HTTP_200_OK
+    )
+    # Status => FUNCTIONALITY COMPLETE
+
+
+@router.get("/cohorts/{cohort_id}")
+async def get_cohort_by_id(
+    cohort_id: int,
+    manager: Annotated[ICohortManager, Depends(get_cohort_manager)],
+    user: Annotated[AuthorisedUser, Depends(get_request_user)],
+):
+    result: Result = manager.get_cohort(user=user, cohort_id=cohort_id)
+    if not result:
+        raise ERRORS[result.type](detail=result.value)
+    return ResponseMaker.from_dict(
+        data=result.value, model_class=CohortProfile, status_code=status.HTTP_200_OK
+    )
+    # Status => FUNCTIONALITY COMPLETE
 
 
 @router.post("/cohorts/{cohort_id}/students")
 async def assign_students_to_cohort(
     cohort_id: int,
-    students: List[Student],
-    manager: Annotated[ICohortManager, Depends(get_dept_manager)],
+    students: AddStudentsToCohort,
+    manager: Annotated[ICohortManager, Depends(get_cohort_manager)],
     user: Annotated[AuthorisedUser, Depends(get_request_user)],
 ):
-    students_list = [student.model_dump() for student in students]
-    result: Result = manager.assign_students_to_cohort(
-        cohort_id, user=user, students=students_list
+    students_list = students.model_dump().get("student_ids")
+    result: Result = manager.add_students_to_cohort(
+        cohort_id=cohort_id, user=user, students=students_list
     )
     if not result:
         raise ERRORS[result.type](detail=result.value)
     return ResponseMaker.from_dict(
-        data=result.value, model_class=Cohort, status_code=status.HTTP_200_OK
+        data=result.value, model_class=CohortProfile, status_code=status.HTTP_200_OK
     )
+    # Status => FUNCTIONALITY COMPLETE
 
 
 @router.post("/cohorts/{cohort_id}/personal-tutor/{tutor_id}")
 async def assign_personal_tutor_to_cohort(
     cohort_id: int,
     tutor_id: int,
-    manager: Annotated[ICohortManager, Depends(get_dept_manager)],
+    manager: Annotated[ICohortManager, Depends(get_cohort_manager)],
     user: Annotated[AuthorisedUser, Depends(get_request_user)],
 ):
     result: Result = manager.assign_personal_tutor_to_cohort(
-        cohort_id, tutor_id, user=user
+        cohort_id=cohort_id, personal_tutor_id=tutor_id, user=user
     )
     if not result:
         raise ERRORS[result.type](detail=result.value)
     return ResponseMaker.from_dict(
-        data=result.value, model_class=Cohort, status_code=status.HTTP_200_OK
+        data=result.value, model_class=CohortProfile, status_code=status.HTTP_200_OK
     )
+    # Status => FUNCTIONALITY COMPLETE

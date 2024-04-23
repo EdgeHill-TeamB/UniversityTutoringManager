@@ -52,7 +52,7 @@ def inject_routers(app: FastAPI) -> FastAPI:
     from utm.Presentation.routes.Department import router as dept_router
     from utm.Presentation.routes.PersonalTutor import router as personal_tutor_router
     from utm.Presentation.routes.Student import router as student_router
-    from utm.Presentation.routes.StudentCohort import router as student_cohort_router
+    from utm.Presentation.routes.Cohort import router as student_cohort_router
     from utm.Presentation.routes.Meeting import router as meeting_router
 
     app.include_router(heartbeat_router)

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, status
 from typing import Annotated
 from ..models.common import Schedule
+from ..models.common import Notification
 from ..models.meeting import RequestMeeting, RequestMeetingResponse
 from ..common._exceptions import ResourceNotFoundException
 from ..common.make_response import ResponseMaker
@@ -51,6 +52,19 @@ async def get_schedule(
     )
 
 
-# get students route
-
 # notify student route
+@router.post("/{student_id}/notify")
+async def notify_student(
+    student_id: int,
+    message: str,
+    manager=Annotated[IStudentManager, Depends(get_student_manager)],
+    user=Annotated[AuthorisedUser, Depends(get_request_user)],
+):
+    result: Result = manager.notify_student(
+        actor=user, student_id=student_id, message=message
+    )
+    if not result:
+        raise ResourceNotFoundException(result.value)
+    return ResponseMaker.from_dict(
+        data=result.value, model_class=Notification, status_code=status.HTTP_200_OK
+    )

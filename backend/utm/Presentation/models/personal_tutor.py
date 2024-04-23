@@ -2,27 +2,21 @@ from __future__ import annotations
 from datetime import datetime
 from pydantic import BaseModel
 from typing import List
-from .student_cohort import Cohort
+from .PersonalTutorBase import PersonalTutorBase, PersonalTutorTraining
 
 
-class PersonalTutorAssignment(BaseModel):
-    department_id: int
-    tutor_id: int
+class PersonalTutorUpdate(BaseModel):
+    email: str = None
+    training: PersonalTutorTraining = None
+
+    def __post_init__(self):
+        if self.training is None and self.email is None:
+            raise ValueError("At least one of email or training field must be provided")
 
 
-class PersonalTutorTrainingStatus(BaseModel):
-    id: int
-    status: str
-    description: str
-
-
-class PersonalTutor(BaseModel):
-    id: int
-    name: str
-    email: str
-    phone: str
+class PersonalTutor(PersonalTutorBase):
     department: str
-    training_status: PersonalTutorTrainingStatus
+    training: PersonalTutorTraining
 
 
 class PersonalTutorSchedule(BaseModel):

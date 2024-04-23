@@ -34,7 +34,7 @@ class DepartmentTutorModel(BaseModel):
     name: str
     email: str
     module: str
-    training_status: str
+    is_personal_tutor: bool
     department: str
 
     def model_dump(self):
@@ -43,6 +43,6 @@ class DepartmentTutorModel(BaseModel):
             "name": self.name,
             "email": self.email,
             "module": self.module,
-            "training_status": self.training_status,
+            "is_personal_tutor": self.is_personal_tutor,
             "department": self.department,
         }

@@ -18,10 +18,8 @@ class BadCredentialsException(HTTPException):
 
 
 class PermissionDeniedException(HTTPException):
-    def __init__(self):
-        super().__init__(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied"
-        )
+    def __init__(self, detail="Permission denied"):
+        super().__init__(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
 
 
 class RequiresAuthenticationException(HTTPException):
@@ -45,7 +43,17 @@ class ResourceNotFoundException(HTTPException):
         )
 
 
+class InvalidParameterException(HTTPException):
+    def __init__(self, detail: str = "Invalid parameters provided"):
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=detail,
+        )
+
+
 ERRORS = {
+    ErrorTypes.PARAMETERS_ERROR: InvalidParameterException,
     ErrorTypes.RESOURCE_ERROR: ResourceNotFoundException,
     ErrorTypes.AUTHORISATION_ERROR: RequiresAuthenticationException,
+    ErrorTypes.PERMISSION_ERROR: PermissionDeniedException,
 }
